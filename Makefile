@@ -250,7 +250,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer -fno-tree-vectorize -std=gnu89
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer -fno-tree-vectorize
 HOSTCXXFLAGS = -O3 -fno-tree-vectorize -fgraphite
 
 # Decide whether to build built-in, modular, or both.
@@ -383,8 +383,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   --param l2-cache-size=2048 \
 		   --param l1-cache-line-size=64 \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-tree-vectorize -ffast-math \
-		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
-		   -std=gnu89
+		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
