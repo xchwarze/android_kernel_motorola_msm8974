@@ -378,12 +378,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security -Wno-sizeof-pointer-memaccess \
 		   -fno-delete-null-pointer-checks \
-		   -mtune=cortex-a15 -mfpu=neon-vfpv4 \
-		   --param l1-cache-size=32 \
-		   --param l2-cache-size=2048 \
-		   --param l1-cache-line-size=64 \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-tree-vectorize -ffast-math \
-		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload
+		   -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-tree-vectorize -ffast-math
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
