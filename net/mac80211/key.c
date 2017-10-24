@@ -415,6 +415,24 @@ struct ieee80211_key *ieee80211_key_alloc(u32 cipher, int idx, size_t key_len,
 	return key;
 }
 
+static void ieee80211_key_free_common(struct ieee80211_key *key)
+{
+	switch (key->conf.cipher) {
+	case WLAN_CIPHER_SUITE_CCMP:
+		ieee80211_aes_key_free(key->u.ccmp.tfm);
+		break;
+	case WLAN_CIPHER_SUITE_AES_CMAC:
+		ieee80211_aes_cmac_key_free(key->u.aes_cmac.tfm);
+		break;
+	/* TODO not supported?
+	case WLAN_CIPHER_SUITE_GCMP:
+		ieee80211_aes_gcm_key_free(key->u.gcmp.tfm);
+		break;
+	*/
+	}
+	kzfree(key);
+}
+
 static void __ieee80211_key_destroy(struct ieee80211_key *key)
 {
 	if (!key)
@@ -439,6 +457,12 @@ static void __ieee80211_key_destroy(struct ieee80211_key *key)
 	}
 
 	kfree(key);
+}
+
+void ieee80211_key_free_unused(struct ieee80211_key *key)
+{
+	WARN_ON(key->sdata || key->local);
+	ieee80211_key_free_common(key);
 }
 
 int ieee80211_key_link(struct ieee80211_key *key,
