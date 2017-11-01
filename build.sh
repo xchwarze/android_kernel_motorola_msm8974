@@ -56,7 +56,7 @@ done
 
 [ "$MEXTRA" ] || MEXTRA=""
 
-DEFCONFIG="kali-lite_victara_defconfig"
+DEFCONFIG="kali_victara_defconfig"
 [ -f "$RDIR/arch/$ARCH/configs/${DEFCONFIG}" ] ||
 ABORT "Device config $DEFCONFIG not found in $ARCH configs!"
 
