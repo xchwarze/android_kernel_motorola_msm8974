@@ -97,6 +97,9 @@
 #include "f_uac1.c"
 #endif
 #include "f_ncm.c"
+#include "f_hid.h"
+#include "f_hid_android_keyboard.c"
+#include "f_hid_android_mouse.c"
 
 MODULE_AUTHOR("Mike Lockwood");
 MODULE_DESCRIPTION("Android Composite USB Driver");
@@ -2088,6 +2091,41 @@ static struct android_usb_function uasp_function = {
 	.bind_config	= uasp_function_bind_config,
 };
 
+static int hid_function_init(struct android_usb_function *f, struct usb_composite_dev *cdev)
+{
+	return ghid_setup(cdev->gadget, 2);
+}
+
+static void hid_function_cleanup(struct android_usb_function *f)
+{
+	ghid_cleanup();
+}
+
+static int hid_function_bind_config(struct android_usb_function *f, struct usb_configuration *c)
+{
+	int ret;
+	printk(KERN_INFO "hid keyboard\n");
+	ret = hidg_bind_config(c, &ghid_device_android_keyboard, 0);
+	if (ret) {
+		pr_info("%s: hid_function_bind_config keyboard failed: %d\n", __func__, ret);
+		return ret;
+	}
+	printk(KERN_INFO "hid mouse\n");
+	ret = hidg_bind_config(c, &ghid_device_android_mouse, 1);
+	if (ret) {
+		pr_info("%s: hid_function_bind_config mouse failed: %d\n", __func__, ret);
+		return ret;
+	}
+	return 0;
+}
+
+static struct android_usb_function hid_function = {
+	.name		= "hid",
+	.init		= hid_function_init,
+	.cleanup	= hid_function_cleanup,
+	.bind_config	= hid_function_bind_config,
+};
+
 static int usbnet_function_init(struct android_usb_function *f,
 				struct usb_composite_dev *cdev)
 {
@@ -2262,6 +2300,7 @@ static struct android_usb_function *supported_functions[] = {
 #endif
 	&uasp_function,
 	&usbnet_function,
+	&hid_function,
 	NULL
 };
 
@@ -2541,6 +2580,7 @@ functions_store(struct device *pdev, struct device_attribute *attr,
 	char *name;
 	char buf[256], *b;
 	int err;
+	int hid_enabled = 0;
 
 	mutex_lock(&dev->mutex);
 
@@ -2581,14 +2621,27 @@ functions_store(struct device *pdev, struct device_attribute *attr,
 			curr_conf = curr_conf->next;
 		}
 
+		/* Always enable HID gadget function. */
+		if (!hid_enabled) {
+			name = "hid";
+			err = android_enable_function(dev, conf, name);
+			if (err)
+				pr_err("android_usb: Cannot enable '%s' (%d)", name, err);
+			else
+				hid_enabled = 1;
+		}
+
 		while (conf_str) {
 			name = strsep(&conf_str, ",");
-			if (name) {
-				err = android_enable_function(dev, conf, name);
-				if (err)
-					pr_err("android_usb: Cannot enable %s",
-						name);
-			}
+			if (!name)
+				continue;
+
+			if (!strcmp(name, "hid"))
+				continue; /* HID already enabled above */
+
+			err = android_enable_function(dev, conf, name);
+			if (err)
+				pr_err("android_usb: Cannot enable '%s' (%d)", name, err);
 		}
 	}
 
